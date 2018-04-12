@@ -22,6 +22,7 @@
 #define AACS_H_
 
 #include <stdint.h>
+#include <string>
 
 #ifndef AACS_PUBLIC
 #  define AACS_PUBLIC
@@ -197,11 +198,114 @@ struct aacs_basic_cci;
 
 AACS_PUBLIC struct aacs_basic_cci * __cdecl aacs_get_basic_cci(AACS *, uint32_t title);
 
-AACS_PUBLIC void __cdecl aacs_set_fopen(AACS *aacs, void *handle, void* p);
+AACS_PUBLIC void __cdecl aacs_set_fopen(AACS *aacs, void *bd_disc_structure_pointer, void* p);
 AACS_PUBLIC void* __cdecl aacs_register_file(void* p);
 
 #ifdef __cplusplus
 }
 #endif
+
+typedef struct bd_mutex_s BD_MUTEX;
+struct bd_mutex_s {
+    void *impl;
+};
+
+
+typedef void    (*fptr_void)(...);
+typedef int     (*fptr_int)(...);
+typedef int32_t (*fptr_int32)(...);
+typedef void*   (*fptr_p_void)(...);
+
+typedef struct bd_aacs BD_AACS;
+
+struct bd_aacs {
+    void           *h_libaacs;   /* library handle from dlopen */
+    void           *aacs;        /* aacs handle from aacs_open() */
+
+    const uint8_t *disc_id;
+    uint32_t       mkbv;
+
+    /* function pointers */
+    fptr_int       decrypt_unit;
+    fptr_int       decrypt_bus;
+
+    int            impl_id;
+};
+
+typedef struct bd_bdplus BD_BDPLUS;
+
+struct bd_bdplus {
+    void           *h_libbdplus; /* library handle from dlopen */
+
+    void           *bdplus;      /* bdplus handle from bdplus_open() */
+
+    /* functions */
+    fptr_int32     event;
+    fptr_p_void    m2ts;
+    fptr_int32     m2ts_close;
+    fptr_int32     seek;
+    fptr_int32     fixup;
+
+    /* old API */
+    fptr_p_void    title;
+
+    int impl_id;
+};
+
+typedef struct bd_dec BD_DEC;
+struct bd_dec {
+    int        use_menus;
+    BD_AACS   *aacs;
+    BD_BDPLUS *bdplus;
+};
+
+typedef struct bd_file_s BD_FILE_H;
+struct bd_file_s
+{
+    void* internal;
+    void    (*close) (BD_FILE_H *file);
+    int64_t (*seek)  (BD_FILE_H *file, int64_t offset, int32_t origin);
+    int64_t (*tell)  (BD_FILE_H *file);
+    int     (*eof)   (BD_FILE_H *file);
+    int64_t (*read)  (BD_FILE_H *file, uint8_t *buf, int64_t size);
+    int64_t (*write) (BD_FILE_H *file, const uint8_t *buf, int64_t size);
+};
+
+typedef struct
+{
+    char    d_name[256];
+} BD_DIRENT;
+
+typedef struct bd_dir_s BD_DIR_H;
+struct bd_dir_s
+{
+    void* internal;
+    void (*close)(BD_DIR_H *dir);
+    int (*read)(BD_DIR_H *dir, BD_DIRENT *entry);
+};
+
+typedef struct bd_disc BD_DISC;
+
+struct bd_disc {
+    BD_MUTEX  ovl_mutex;     /* protect access to overlay root */
+    BD_MUTEX  properties_mutex; /* protect access to properties file */
+
+    char     *disc_root;     /* disc filesystem root (if disc is mounted) */
+    char     *overlay_root;  /* overlay filesystem root (if set) */
+
+    BD_DEC   *dec;
+
+    void         *fs_handle;
+    BD_FILE_H * (*pf_file_open_bdrom)(void *, const char *);
+    BD_DIR_H *  (*pf_dir_open_bdrom)(void *, const char *);
+    void        (*pf_fs_close)(void *);
+
+    const char   *udf_volid;
+    char         *properties_file;  /* NULL if not yet used */
+
+    int8_t        avchd;  /* -1 - unknown. 0 - no. 1 - yes */
+};
+
+static std::string *cxx_string_pointer;  // declare a persistent file scope variable
 
 #endif /* AACS_H_ */

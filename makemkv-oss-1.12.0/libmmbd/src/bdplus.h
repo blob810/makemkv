@@ -29,6 +29,7 @@ typedef struct _BDPLUS_CTX BDPLUS_ST;
 extern "C" {
 #endif
 
+AACS_PUBLIC BDPLUS_CTX* __cdecl bdplus_set_fopen(BDPLUS_CTX* ctx, void *bd_disc_structure_pointer, void* p);
 AACS_PUBLIC BDPLUS_CTX* __cdecl bdplus_init(const char *path, const char *keyfile_path,const uint8_t* aacs_vid);
 AACS_PUBLIC int __cdecl bdplus_free(BDPLUS_CTX* ctx);
 

@@ -44,6 +44,12 @@ typedef struct _BDPLUS_CTX
     uint64_t    offset;
 } BDPLUS_CTX;
 
+// provide a minimal bdplus_set_fopen()
+AACS_PUBLIC BDPLUS_CTX* __cdecl bdplus_set_fopen(BDPLUS_CTX* ctx, void *bd_disc_structure_pointer, void* p)
+{
+    return ctx;
+}
+
 /*
     This function requires aacs_vid value produced by aacs_get_vid, not an actual disc VID.
 */

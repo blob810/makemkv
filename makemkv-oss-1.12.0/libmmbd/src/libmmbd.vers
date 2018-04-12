@@ -33,6 +33,7 @@
   aacs_get_device_nonce;
   aacs_get_bus_encryption;
   aacs_register_file;
+  bdplus_set_fopen;
   bdplus_init;
   bdplus_free;
   bdplus_set_title;

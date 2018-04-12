@@ -110,6 +110,7 @@ AACS_PUBLIC int __cdecl aacs_open_device(AACS *aacs, const char *path, const cha
         }
     }
 
+    if (!path) path = (*cxx_string_pointer).c_str();
     if (mmbd_open((MMBD*)aacs,path)) {
         return AACS_ERROR_CORRUPTED_DISC;
     }
@@ -189,8 +190,11 @@ AACS_PUBLIC const uint8_t * __cdecl aacs_get_bdj_root_cert_hash(AACS *aacs)
     return (const uint8_t *)"mmbd_fake_aacs_get_bdj_root_cert_hash";
 }
 
-AACS_PUBLIC void __cdecl aacs_set_fopen(AACS *aacs, void *handle, void* p)
+AACS_PUBLIC void __cdecl aacs_set_fopen(AACS *aacs, void *bd_disc_structure_pointer, void* p)
 {
+   BD_DISC bd_disc_structure = *reinterpret_cast<BD_DISC*>(bd_disc_structure_pointer); // Copy the BD_DISC structure
+
+   cxx_string_pointer = reinterpret_cast<std::string*>(bd_disc_structure.fs_handle); // Copy the C++ string object pointer of interest
 }
 
 static void* file_open = NULL;
