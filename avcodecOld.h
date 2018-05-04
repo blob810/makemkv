@@ -1061,6 +1061,7 @@ typedef struct RcOverride{
  * implementation provides some sort of internal fallback.
  */
 #define AV_CODEC_CAP_HYBRID              (1 << 19)
+#define CODEC_FLAG_GLOBAL_HEADER  AV_CODEC_FLAG_GLOBAL_HEADER
 /**
  * Pan Scan area.
  * This specifies the area which should be displayed.

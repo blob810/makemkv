@@ -447,6 +447,8 @@ enum AVCodecID {
     AV_CODEC_ID_GDV,
     AV_CODEC_ID_FITS,
 
+    AV_CODEC_ID_H264_MVC,
+
     /* various PCM "codecs" */
     AV_CODEC_ID_FIRST_AUDIO = 0x10000,     ///< A dummy id pointing at the start of audio codecs
     AV_CODEC_ID_PCM_S16LE = 0x10000,
@@ -1061,7 +1063,7 @@ typedef struct RcOverride{
  * implementation provides some sort of internal fallback.
  */
 #define AV_CODEC_CAP_HYBRID              (1 << 19)
-#define CODEC_FLAG_GLOBAL_HEADER  AV_CODEC_FLAG_GLOBAL_HEADER
+
 /**
  * Pan Scan area.
  * This specifies the area which should be displayed.
@@ -2560,6 +2562,7 @@ typedef struct AVCodecContext {
 #define FF_BUG_MS               8192 ///< Work around various bugs in Microsoft's broken decoders.
 #define FF_BUG_TRUNCATED       16384
 #define FF_BUG_IEDGE           32768
+#define FF_BUG_GMC_UNSUPPORTED (1<<30)
 
     /**
      * strictly follow the standard (MPEG-4, ...).
@@ -2894,6 +2897,7 @@ typedef struct AVCodecContext {
 #define FF_PROFILE_H264_HIGH_444_PREDICTIVE  244
 #define FF_PROFILE_H264_HIGH_444_INTRA       (244|FF_PROFILE_H264_INTRA)
 #define FF_PROFILE_H264_CAVLC_444            44
+#define FF_PROFILE_H264_MULTIVIEW_HIGH_DEPTH 138
 
 #define FF_PROFILE_VC1_SIMPLE   0
 #define FF_PROFILE_VC1_MAIN     1
@@ -3208,7 +3212,13 @@ typedef struct AVCodecContext {
 #endif
 
     /**
-     * Audio only. The amount of padding (in samples) appended by the encoder to
+     * Opaque pointer for use by replacement get_buffer2 code
+     *
+     * @author jc (08/02/2016)
+     */
+    void * get_buffer_context;
+
+    /* Audio only. The amount of padding (in samples) appended by the encoder to
      * the end of the audio. I.e. this number of decoded samples must be
      * discarded by the caller from the end of the stream to get the original
      * audio without any trailing padding.
@@ -4592,6 +4602,17 @@ void av_packet_rescale_ts(AVPacket *pkt, AVRational tb_src, AVRational tb_dst);
  * @return A decoder if one was found, NULL otherwise.
  */
 AVCodec *avcodec_find_decoder(enum AVCodecID id);
+
+/**
+ * Find a registered decoder with a matching codec ID and pix_fmt.
+ * A decoder will pix_fmt set to NULL will match any fmt.
+ * A fmt of AV_PIX_FMT_NONE will only match a decoder will px_fmt NULL.
+ *
+ * @param id AVCodecID of the requested decoder
+ * @param fmt AVPixelForma that msut be supported by decoder
+ * @return A decoder if one was found, NULL otherwise.
+ */
+AVCodec *avcodec_find_decoder_by_id_and_fmt(enum AVCodecID id, enum AVPixelFormat fmt);
 
 /**
  * Find a registered decoder with the specified name.
